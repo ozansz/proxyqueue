@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package proxyqueue.v1;
+
+option go_package = "go.sazak.io/proxyqueue/gen/proxyqueue/v1;proxyqueuev1";
+
+import "google/protobuf/timestamp.proto";
+
+message SubmitURLRequest {
+  string url = 1;
+  string user_agent = 2;
+}
+
+message SubmitURLResponse {
+  string id = 1;
+  string url = 2;
+  string html_content = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp finished_at = 7;
+}
+
+service ProxyQueueService {
+  rpc SubmitURL(SubmitURLRequest) returns (SubmitURLResponse) {}
+}
