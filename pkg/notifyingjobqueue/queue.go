@@ -5,6 +5,10 @@ import (
 	"sync"
 )
 
+const (
+	bufferSize = 10000
+)
+
 type Doer[T any] func(workerID int) (T, error)
 
 type Job[T any] struct {
@@ -38,7 +42,7 @@ func NewNotifyingJobQueue[T any](numWorkers int) NotifyingJobQueue[T] {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	q := &notifyingJobQueue[T]{
-		jobs:   make(chan *Job[T]),
+		jobs:   make(chan *Job[T], bufferSize),
 		cancel: cancel,
 		wg:     sync.WaitGroup{},
 	}
@@ -59,14 +63,22 @@ func (w *worker[T]) work(ctx context.Context) {
 	w.wg.Add(1)
 	defer w.wg.Done()
 
+	_work := func(job *Job[T]) {
+		res, err := job.do(w.id)
+		job.resultChan <- &JobResult[T]{Res: res, Err: err}
+		close(job.resultChan)
+	}
+
 	for {
 		select {
 		case <-ctx.Done():
+			// Drain the channel
+			for job := range w.jobs {
+				_work(job)
+			}
 			return
 		case job := <-w.jobs:
-			res, err := job.do(w.id)
-			job.resultChan <- &JobResult[T]{Res: res, Err: err}
-			close(job.resultChan)
+			_work(job)
 		}
 	}
 }

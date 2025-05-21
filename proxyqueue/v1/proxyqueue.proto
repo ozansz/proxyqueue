@@ -16,7 +16,8 @@ message SubmitURLResponse {
   string url = 2;
   string html_content = 5;
   google.protobuf.Timestamp created_at = 6;
-  google.protobuf.Timestamp finished_at = 7;
+  google.protobuf.Timestamp started_at = 7;
+  google.protobuf.Timestamp finished_at = 8;
 }
 
 service ProxyQueueService {

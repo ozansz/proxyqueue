@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"fmt"
 	"sync"
 	"time"
 )
@@ -25,7 +24,7 @@ func (s *memoryStorage[K, V]) Get(key K) (V, error) {
 	value, ok := s.store.Load(key)
 	if !ok {
 		var zero V
-		return zero, fmt.Errorf("key not found")
+		return zero, nil
 	}
 	return value.(V), nil
 }

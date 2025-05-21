@@ -80,7 +80,8 @@ type SubmitURLResponse struct {
 	Url           string                 `protobuf:"bytes,2,opt,name=url,proto3" json:"url,omitempty"`
 	HtmlContent   string                 `protobuf:"bytes,5,opt,name=html_content,json=htmlContent,proto3" json:"html_content,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	FinishedAt    *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=finished_at,json=finishedAt,proto3" json:"finished_at,omitempty"`
+	StartedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=started_at,json=startedAt,proto3" json:"started_at,omitempty"`
+	FinishedAt    *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=finished_at,json=finishedAt,proto3" json:"finished_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -143,6 +144,13 @@ func (x *SubmitURLResponse) GetCreatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *SubmitURLResponse) GetStartedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.StartedAt
+	}
+	return nil
+}
+
 func (x *SubmitURLResponse) GetFinishedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.FinishedAt
@@ -158,14 +166,16 @@ const file_proxyqueue_v1_proxyqueue_proto_rawDesc = "" +
 	"\x10SubmitURLRequest\x12\x10\n" +
 	"\x03url\x18\x01 \x01(\tR\x03url\x12\x1d\n" +
 	"\n" +
-	"user_agent\x18\x02 \x01(\tR\tuserAgent\"\xd0\x01\n" +
+	"user_agent\x18\x02 \x01(\tR\tuserAgent\"\x8b\x02\n" +
 	"\x11SubmitURLResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x10\n" +
 	"\x03url\x18\x02 \x01(\tR\x03url\x12!\n" +
 	"\fhtml_content\x18\x05 \x01(\tR\vhtmlContent\x129\n" +
 	"\n" +
-	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12;\n" +
-	"\vfinished_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"\n" +
+	"started_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tstartedAt\x12;\n" +
+	"\vfinished_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"finishedAt2e\n" +
 	"\x11ProxyQueueService\x12P\n" +
 	"\tSubmitURL\x12\x1f.proxyqueue.v1.SubmitURLRequest\x1a .proxyqueue.v1.SubmitURLResponse\"\x00B7Z5go.sazak.io/proxyqueue/gen/proxyqueue/v1;proxyqueuev1b\x06proto3"
@@ -190,14 +200,15 @@ var file_proxyqueue_v1_proxyqueue_proto_goTypes = []any{
 }
 var file_proxyqueue_v1_proxyqueue_proto_depIdxs = []int32{
 	2, // 0: proxyqueue.v1.SubmitURLResponse.created_at:type_name -> google.protobuf.Timestamp
-	2, // 1: proxyqueue.v1.SubmitURLResponse.finished_at:type_name -> google.protobuf.Timestamp
-	0, // 2: proxyqueue.v1.ProxyQueueService.SubmitURL:input_type -> proxyqueue.v1.SubmitURLRequest
-	1, // 3: proxyqueue.v1.ProxyQueueService.SubmitURL:output_type -> proxyqueue.v1.SubmitURLResponse
-	3, // [3:4] is the sub-list for method output_type
-	2, // [2:3] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	2, // 1: proxyqueue.v1.SubmitURLResponse.started_at:type_name -> google.protobuf.Timestamp
+	2, // 2: proxyqueue.v1.SubmitURLResponse.finished_at:type_name -> google.protobuf.Timestamp
+	0, // 3: proxyqueue.v1.ProxyQueueService.SubmitURL:input_type -> proxyqueue.v1.SubmitURLRequest
+	1, // 4: proxyqueue.v1.ProxyQueueService.SubmitURL:output_type -> proxyqueue.v1.SubmitURLResponse
+	4, // [4:5] is the sub-list for method output_type
+	3, // [3:4] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_proxyqueue_v1_proxyqueue_proto_init() }

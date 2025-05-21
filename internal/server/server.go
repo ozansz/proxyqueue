@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"io"
 	"log"
@@ -18,6 +19,10 @@ import (
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
+const (
+	cacheTTL = 1 * time.Hour
+)
+
 type Server interface {
 	proxyqueuev1connect.ProxyQueueServiceHandler
 
@@ -25,7 +30,7 @@ type Server interface {
 }
 
 type server struct {
-	storage storage.Storage[string, proxyqueuev1.SubmitURLResponse]
+	storage storage.Storage[string, *proxyqueuev1.SubmitURLResponse]
 	queue   njq.NotifyingJobQueue[*proxyqueuev1.SubmitURLResponse]
 
 	configLock sync.Mutex
@@ -41,7 +46,7 @@ func New(configPath string) (Server, error) {
 
 	return &server{
 		config:  config,
-		storage: storage.NewMemoryStorage[string, proxyqueuev1.SubmitURLResponse](),
+		storage: storage.NewMemoryStorage[string, *proxyqueuev1.SubmitURLResponse](),
 		queue:   njq.NewNotifyingJobQueue[*proxyqueuev1.SubmitURLResponse](config.Concurrency),
 	}, nil
 }
@@ -56,7 +61,18 @@ func (s *server) SubmitURL(
 	s.proxyIndex = (proxyIndex + 1) % len(s.config.Proxies)
 	s.configLock.Unlock()
 
+	createdAt := timestamppb.New(time.Now())
+
 	ch := s.queue.Submit(ctx, func(workerID int) (*proxyqueuev1.SubmitURLResponse, error) {
+		record, err := s.storage.Get(req.Msg.Url)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get record: %w", err)
+		}
+		if record != nil {
+			log.Printf("Worker %d found record for %s in cache", workerID, req.Msg.Url)
+			return record, nil
+		}
+
 		startTime := timestamppb.New(time.Now())
 		log.Printf("Worker %d is processing request for %s", workerID, req.Msg.Url)
 
@@ -68,6 +84,9 @@ func (s *server) SubmitURL(
 		cl := &http.Client{
 			Transport: &http.Transport{
 				Proxy: http.ProxyURL(proxyURL),
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: true,
+				},
 			},
 		}
 
@@ -92,14 +111,19 @@ func (s *server) SubmitURL(
 		}
 
 		finishedAt := timestamppb.New(time.Now())
-		log.Printf("Worker %d finished processing request for %s in %.2f seconds", workerID, req.Msg.Url, time.Since(startTime.AsTime()).Seconds())
+		log.Printf("Worker %d finished processing request for %s in %.2f seconds (%.2f seconds idle time) with status code %d", workerID, req.Msg.Url, time.Since(startTime.AsTime()).Seconds(), time.Since(createdAt.AsTime()).Seconds()-time.Since(startTime.AsTime()).Seconds(), resp.StatusCode)
 
-		return &proxyqueuev1.SubmitURLResponse{
+		record = &proxyqueuev1.SubmitURLResponse{
 			Url:         req.Msg.Url,
 			HtmlContent: string(body),
-			CreatedAt:   startTime,
+			CreatedAt:   createdAt,
+			StartedAt:   startTime,
 			FinishedAt:  finishedAt,
-		}, nil
+		}
+
+		s.storage.Set(req.Msg.Url, record, cacheTTL)
+
+		return record, nil
 	})
 
 	res := <-ch
