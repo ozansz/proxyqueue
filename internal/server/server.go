@@ -95,7 +95,11 @@ func (s *server) SubmitURL(
 			log.Printf("Worker %d failed to create request: %s", workerID, err)
 			return nil, fmt.Errorf("failed to create request: %w", err)
 		}
-		r.Header.Set("User-Agent", req.Msg.UserAgent)
+		if req.Msg.UserAgent != nil {
+			r.Header.Set("User-Agent", *req.Msg.UserAgent)
+		} else if req.Msg.UseRandomUserAgent {
+			r.Header.Set("User-Agent", s.config.UserAgents.Random())
+		}
 
 		resp, err := cl.Do(r)
 		if err != nil {
@@ -114,11 +118,15 @@ func (s *server) SubmitURL(
 		log.Printf("Worker %d finished processing request for %s in %.2f seconds (%.2f seconds idle time) with status code %d", workerID, req.Msg.Url, time.Since(startTime.AsTime()).Seconds(), time.Since(createdAt.AsTime()).Seconds()-time.Since(startTime.AsTime()).Seconds(), resp.StatusCode)
 
 		record = &proxyqueuev1.SubmitURLResponse{
-			Url:         req.Msg.Url,
-			HtmlContent: string(body),
-			CreatedAt:   createdAt,
-			StartedAt:   startTime,
-			FinishedAt:  finishedAt,
+			Url:        req.Msg.Url,
+			CreatedAt:  createdAt,
+			StartedAt:  startTime,
+			FinishedAt: finishedAt,
+		}
+		if req.Msg.BinaryContent {
+			record.BinaryContent = body
+		} else {
+			record.HtmlContent = string(body)
 		}
 
 		s.storage.Set(req.Msg.Url, record, cacheTTL)

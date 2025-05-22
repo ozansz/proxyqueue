@@ -23,11 +23,13 @@ const (
 )
 
 type SubmitURLRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Url           string                 `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
-	UserAgent     string                 `protobuf:"bytes,2,opt,name=user_agent,json=userAgent,proto3" json:"user_agent,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	Url                string                 `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
+	UserAgent          *string                `protobuf:"bytes,2,opt,name=user_agent,json=userAgent,proto3,oneof" json:"user_agent,omitempty"`
+	UseRandomUserAgent bool                   `protobuf:"varint,3,opt,name=use_random_user_agent,json=useRandomUserAgent,proto3" json:"use_random_user_agent,omitempty"`
+	BinaryContent      bool                   `protobuf:"varint,4,opt,name=binary_content,json=binaryContent,proto3" json:"binary_content,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *SubmitURLRequest) Reset() {
@@ -68,10 +70,24 @@ func (x *SubmitURLRequest) GetUrl() string {
 }
 
 func (x *SubmitURLRequest) GetUserAgent() string {
-	if x != nil {
-		return x.UserAgent
+	if x != nil && x.UserAgent != nil {
+		return *x.UserAgent
 	}
 	return ""
+}
+
+func (x *SubmitURLRequest) GetUseRandomUserAgent() bool {
+	if x != nil {
+		return x.UseRandomUserAgent
+	}
+	return false
+}
+
+func (x *SubmitURLRequest) GetBinaryContent() bool {
+	if x != nil {
+		return x.BinaryContent
+	}
+	return false
 }
 
 type SubmitURLResponse struct {
@@ -79,9 +95,10 @@ type SubmitURLResponse struct {
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Url           string                 `protobuf:"bytes,2,opt,name=url,proto3" json:"url,omitempty"`
 	HtmlContent   string                 `protobuf:"bytes,5,opt,name=html_content,json=htmlContent,proto3" json:"html_content,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	StartedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=started_at,json=startedAt,proto3" json:"started_at,omitempty"`
-	FinishedAt    *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=finished_at,json=finishedAt,proto3" json:"finished_at,omitempty"`
+	BinaryContent []byte                 `protobuf:"bytes,6,opt,name=binary_content,json=binaryContent,proto3" json:"binary_content,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	StartedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=started_at,json=startedAt,proto3" json:"started_at,omitempty"`
+	FinishedAt    *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=finished_at,json=finishedAt,proto3" json:"finished_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -137,6 +154,13 @@ func (x *SubmitURLResponse) GetHtmlContent() string {
 	return ""
 }
 
+func (x *SubmitURLResponse) GetBinaryContent() []byte {
+	if x != nil {
+		return x.BinaryContent
+	}
+	return nil
+}
+
 func (x *SubmitURLResponse) GetCreatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.CreatedAt
@@ -162,20 +186,24 @@ var File_proxyqueue_v1_proxyqueue_proto protoreflect.FileDescriptor
 
 const file_proxyqueue_v1_proxyqueue_proto_rawDesc = "" +
 	"\n" +
-	"\x1eproxyqueue/v1/proxyqueue.proto\x12\rproxyqueue.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"C\n" +
+	"\x1eproxyqueue/v1/proxyqueue.proto\x12\rproxyqueue.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xb1\x01\n" +
 	"\x10SubmitURLRequest\x12\x10\n" +
-	"\x03url\x18\x01 \x01(\tR\x03url\x12\x1d\n" +
+	"\x03url\x18\x01 \x01(\tR\x03url\x12\"\n" +
 	"\n" +
-	"user_agent\x18\x02 \x01(\tR\tuserAgent\"\x8b\x02\n" +
+	"user_agent\x18\x02 \x01(\tH\x00R\tuserAgent\x88\x01\x01\x121\n" +
+	"\x15use_random_user_agent\x18\x03 \x01(\bR\x12useRandomUserAgent\x12%\n" +
+	"\x0ebinary_content\x18\x04 \x01(\bR\rbinaryContentB\r\n" +
+	"\v_user_agent\"\xb2\x02\n" +
 	"\x11SubmitURLResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x10\n" +
 	"\x03url\x18\x02 \x01(\tR\x03url\x12!\n" +
-	"\fhtml_content\x18\x05 \x01(\tR\vhtmlContent\x129\n" +
+	"\fhtml_content\x18\x05 \x01(\tR\vhtmlContent\x12%\n" +
+	"\x0ebinary_content\x18\x06 \x01(\fR\rbinaryContent\x129\n" +
 	"\n" +
-	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"started_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tstartedAt\x12;\n" +
-	"\vfinished_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"started_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tstartedAt\x12;\n" +
+	"\vfinished_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"finishedAt2e\n" +
 	"\x11ProxyQueueService\x12P\n" +
 	"\tSubmitURL\x12\x1f.proxyqueue.v1.SubmitURLRequest\x1a .proxyqueue.v1.SubmitURLResponse\"\x00B7Z5go.sazak.io/proxyqueue/gen/proxyqueue/v1;proxyqueuev1b\x06proto3"
@@ -216,6 +244,7 @@ func file_proxyqueue_v1_proxyqueue_proto_init() {
 	if File_proxyqueue_v1_proxyqueue_proto != nil {
 		return
 	}
+	file_proxyqueue_v1_proxyqueue_proto_msgTypes[0].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

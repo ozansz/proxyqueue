@@ -8,16 +8,19 @@ import "google/protobuf/timestamp.proto";
 
 message SubmitURLRequest {
   string url = 1;
-  string user_agent = 2;
+  optional string user_agent = 2;
+  bool use_random_user_agent = 3;
+  bool binary_content = 4;
 }
 
 message SubmitURLResponse {
   string id = 1;
   string url = 2;
   string html_content = 5;
-  google.protobuf.Timestamp created_at = 6;
-  google.protobuf.Timestamp started_at = 7;
-  google.protobuf.Timestamp finished_at = 8;
+  bytes binary_content = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp started_at = 8;
+  google.protobuf.Timestamp finished_at = 9;
 }
 
 service ProxyQueueService {

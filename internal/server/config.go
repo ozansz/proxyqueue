@@ -10,6 +10,9 @@ import (
 type Config struct {
 	Concurrency int      `json:"concurrency"`
 	Proxies     []string `json:"proxies"`
+
+	UserAgentsList []string `json:"user_agents"`
+	UserAgents     *UserAgents
 }
 
 func LoadConfig(configPath string) (*Config, error) {
@@ -23,6 +26,8 @@ func LoadConfig(configPath string) (*Config, error) {
 	if err := json.Unmarshal(b, &config); err != nil {
 		return nil, err
 	}
+
+	config.UserAgents = NewUserAgents(config.UserAgentsList)
 
 	if err := config.Validate(); err != nil {
 		return nil, err
