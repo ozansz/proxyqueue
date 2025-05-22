@@ -64,7 +64,12 @@ func (s *server) SubmitURL(
 	createdAt := timestamppb.New(time.Now())
 
 	ch := s.queue.Submit(ctx, func(workerID int) (*proxyqueuev1.SubmitURLResponse, error) {
-		record, err := s.storage.Get(req.Msg.Url)
+		cacheKey := "plain/" + req.Msg.Url
+		if req.Msg.BinaryContent {
+			cacheKey = "binary/" + req.Msg.Url
+		}
+
+		record, err := s.storage.Get(cacheKey)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get record: %w", err)
 		}
@@ -129,7 +134,7 @@ func (s *server) SubmitURL(
 			record.HtmlContent = string(body)
 		}
 
-		s.storage.Set(req.Msg.Url, record, cacheTTL)
+		s.storage.Set(cacheKey, record, cacheTTL)
 
 		return record, nil
 	})
