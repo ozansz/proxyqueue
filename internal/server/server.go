@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"sync"
 	"time"
@@ -92,7 +93,9 @@ func (s *server) SubmitURL(
 				TLSClientConfig: &tls.Config{
 					InsecureSkipVerify: true,
 				},
+				ForceAttemptHTTP2: false,
 			},
+			Timeout: 15 * time.Second,
 		}
 
 		r, err := http.NewRequestWithContext(ctx, http.MethodGet, req.Msg.Url, nil)
@@ -110,11 +113,20 @@ func (s *server) SubmitURL(
 			r.Header.Set(key, value)
 		}
 
+		dump, err := httputil.DumpRequest(r, true)
+		if err != nil {
+			log.Printf("Worker %d failed to dump request: %s", workerID, err)
+			return nil, fmt.Errorf("failed to dump request: %w", err)
+		}
+		log.Printf("Worker %d dumped request: %s", workerID, string(dump))
+		log.Printf("Worker %d sending request to %s with headers %v and proxy %s", workerID, req.Msg.Url, r.Header, proxy)
+
 		resp, err := cl.Do(r)
 		if err != nil {
 			log.Printf("Worker %d failed to send request: %s", workerID, err)
 			return nil, fmt.Errorf("failed to send request: %w", err)
 		}
+		log.Printf("Worker %d received response with status code %d", workerID, resp.StatusCode)
 		defer resp.Body.Close()
 
 		body, err := io.ReadAll(resp.Body)
@@ -122,7 +134,7 @@ func (s *server) SubmitURL(
 			log.Printf("Worker %d failed to read response body: %s", workerID, err)
 			return nil, fmt.Errorf("failed to read response body: %w", err)
 		}
-
+		log.Printf("Worker %d read response body with length %d", workerID, len(body))
 		finishedAt := timestamppb.New(time.Now())
 		log.Printf("Worker %d finished processing request for %s in %.2f seconds (%.2f seconds idle time) with status code %d", workerID, req.Msg.Url, time.Since(startTime.AsTime()).Seconds(), time.Since(createdAt.AsTime()).Seconds()-time.Since(startTime.AsTime()).Seconds(), resp.StatusCode)
 
@@ -138,7 +150,9 @@ func (s *server) SubmitURL(
 			record.HtmlContent = string(body)
 		}
 
+		log.Printf("Worker %d setting record for %s in cache", workerID, req.Msg.Url)
 		s.storage.Set(cacheKey, record, cacheTTL)
+		log.Printf("Worker %d set record for %s in cache", workerID, req.Msg.Url)
 
 		return record, nil
 	})
