@@ -15,6 +15,7 @@ import (
 
 var (
 	configPath = flag.String("config", "config.json", "path to the config file")
+	listenAddr = flag.String("listen", ":8080", "address to listen on")
 )
 
 func main() {
@@ -27,8 +28,11 @@ func main() {
 	mux := http.NewServeMux()
 	path, handler := proxyqueuev1connect.NewProxyQueueServiceHandler(srv)
 	mux.Handle(path, handler)
+
+	log.Printf("Listening on %s", *listenAddr)
+
 	http.ListenAndServe(
-		"localhost:8080",
+		*listenAddr,
 		// Use h2c so we can serve HTTP/2 without TLS.
 		h2c.NewHandler(mux, &http2.Server{}),
 	)
