@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
 
@@ -12,8 +13,14 @@ import (
 	"go.sazak.io/proxyqueue/internal/server"
 )
 
+var (
+	configPath = flag.String("config", "config.json", "path to the config file")
+)
+
 func main() {
-	srv, err := server.New("config.json")
+	flag.Parse()
+
+	srv, err := server.New(*configPath)
 	if err != nil {
 		log.Fatalf("Failed to create server: %s", err)
 	}
