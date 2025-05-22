@@ -1,0 +1,43 @@
+name: build-and-publish-server
+
+on:
+  # 1️⃣  Pushes to the main branch → ghcr.io/...:dev
+  push:
+    branches: [ "main" ]
+  # 2️⃣  Any new Git tag (v1.2.3, 2025-05-01, …) → :<tag> + :latest
+    tags:     [ "*" ]
+
+jobs:
+  ko-build:
+    runs-on: ubuntu-latest
+    # the default GITHUB_TOKEN is enough if the repo lives under ozansz
+    permissions:
+      packages: write      # allow pushes to GHCR
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ko needs Go in the PATH; pick whatever Go version you use locally
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22.x"
+
+      # install ko and pre-configure auth to ghcr.io
+      - uses: ko-build/setup-ko@v0.9
+
+      # ──────────────────────────────────────────────────────────────
+      # main → :dev
+      - name: Build & push :dev image
+        if: github.ref == 'refs/heads/main'
+        run: |
+          # -B ⇒ image ends up exactly at ghcr.io/ozansz/proxyqueue/server
+          ko build ./cmd/server -B --tags dev
+
+      # tag push → :<tag> AND :latest
+      - name: Build & push :<tag> and :latest images
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          ko build ./cmd/server -B --tags "${TAG_NAME},latest"
