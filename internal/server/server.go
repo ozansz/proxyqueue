@@ -106,6 +106,10 @@ func (s *server) SubmitURL(
 			r.Header.Set("User-Agent", s.config.UserAgents.Random())
 		}
 
+		for key, value := range req.Msg.Headers {
+			r.Header.Set(key, value)
+		}
+
 		resp, err := cl.Do(r)
 		if err != nil {
 			log.Printf("Worker %d failed to send request: %s", workerID, err)

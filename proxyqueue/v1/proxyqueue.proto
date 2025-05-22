@@ -11,6 +11,7 @@ message SubmitURLRequest {
   optional string user_agent = 2;
   bool use_random_user_agent = 3;
   bool binary_content = 4;
+  map<string, string> headers = 5;
 }
 
 message SubmitURLResponse {

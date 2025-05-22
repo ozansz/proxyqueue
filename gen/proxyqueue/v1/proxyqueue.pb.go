@@ -28,6 +28,7 @@ type SubmitURLRequest struct {
 	UserAgent          *string                `protobuf:"bytes,2,opt,name=user_agent,json=userAgent,proto3,oneof" json:"user_agent,omitempty"`
 	UseRandomUserAgent bool                   `protobuf:"varint,3,opt,name=use_random_user_agent,json=useRandomUserAgent,proto3" json:"use_random_user_agent,omitempty"`
 	BinaryContent      bool                   `protobuf:"varint,4,opt,name=binary_content,json=binaryContent,proto3" json:"binary_content,omitempty"`
+	Headers            map[string]string      `protobuf:"bytes,5,rep,name=headers,proto3" json:"headers,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -88,6 +89,13 @@ func (x *SubmitURLRequest) GetBinaryContent() bool {
 		return x.BinaryContent
 	}
 	return false
+}
+
+func (x *SubmitURLRequest) GetHeaders() map[string]string {
+	if x != nil {
+		return x.Headers
+	}
+	return nil
 }
 
 type SubmitURLResponse struct {
@@ -186,13 +194,17 @@ var File_proxyqueue_v1_proxyqueue_proto protoreflect.FileDescriptor
 
 const file_proxyqueue_v1_proxyqueue_proto_rawDesc = "" +
 	"\n" +
-	"\x1eproxyqueue/v1/proxyqueue.proto\x12\rproxyqueue.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xb1\x01\n" +
+	"\x1eproxyqueue/v1/proxyqueue.proto\x12\rproxyqueue.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xb5\x02\n" +
 	"\x10SubmitURLRequest\x12\x10\n" +
 	"\x03url\x18\x01 \x01(\tR\x03url\x12\"\n" +
 	"\n" +
 	"user_agent\x18\x02 \x01(\tH\x00R\tuserAgent\x88\x01\x01\x121\n" +
 	"\x15use_random_user_agent\x18\x03 \x01(\bR\x12useRandomUserAgent\x12%\n" +
-	"\x0ebinary_content\x18\x04 \x01(\bR\rbinaryContentB\r\n" +
+	"\x0ebinary_content\x18\x04 \x01(\bR\rbinaryContent\x12F\n" +
+	"\aheaders\x18\x05 \x03(\v2,.proxyqueue.v1.SubmitURLRequest.HeadersEntryR\aheaders\x1a:\n" +
+	"\fHeadersEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\r\n" +
 	"\v_user_agent\"\xb2\x02\n" +
 	"\x11SubmitURLResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x10\n" +
@@ -220,23 +232,25 @@ func file_proxyqueue_v1_proxyqueue_proto_rawDescGZIP() []byte {
 	return file_proxyqueue_v1_proxyqueue_proto_rawDescData
 }
 
-var file_proxyqueue_v1_proxyqueue_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_proxyqueue_v1_proxyqueue_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_proxyqueue_v1_proxyqueue_proto_goTypes = []any{
 	(*SubmitURLRequest)(nil),      // 0: proxyqueue.v1.SubmitURLRequest
 	(*SubmitURLResponse)(nil),     // 1: proxyqueue.v1.SubmitURLResponse
-	(*timestamppb.Timestamp)(nil), // 2: google.protobuf.Timestamp
+	nil,                           // 2: proxyqueue.v1.SubmitURLRequest.HeadersEntry
+	(*timestamppb.Timestamp)(nil), // 3: google.protobuf.Timestamp
 }
 var file_proxyqueue_v1_proxyqueue_proto_depIdxs = []int32{
-	2, // 0: proxyqueue.v1.SubmitURLResponse.created_at:type_name -> google.protobuf.Timestamp
-	2, // 1: proxyqueue.v1.SubmitURLResponse.started_at:type_name -> google.protobuf.Timestamp
-	2, // 2: proxyqueue.v1.SubmitURLResponse.finished_at:type_name -> google.protobuf.Timestamp
-	0, // 3: proxyqueue.v1.ProxyQueueService.SubmitURL:input_type -> proxyqueue.v1.SubmitURLRequest
-	1, // 4: proxyqueue.v1.ProxyQueueService.SubmitURL:output_type -> proxyqueue.v1.SubmitURLResponse
-	4, // [4:5] is the sub-list for method output_type
-	3, // [3:4] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	2, // 0: proxyqueue.v1.SubmitURLRequest.headers:type_name -> proxyqueue.v1.SubmitURLRequest.HeadersEntry
+	3, // 1: proxyqueue.v1.SubmitURLResponse.created_at:type_name -> google.protobuf.Timestamp
+	3, // 2: proxyqueue.v1.SubmitURLResponse.started_at:type_name -> google.protobuf.Timestamp
+	3, // 3: proxyqueue.v1.SubmitURLResponse.finished_at:type_name -> google.protobuf.Timestamp
+	0, // 4: proxyqueue.v1.ProxyQueueService.SubmitURL:input_type -> proxyqueue.v1.SubmitURLRequest
+	1, // 5: proxyqueue.v1.ProxyQueueService.SubmitURL:output_type -> proxyqueue.v1.SubmitURLResponse
+	5, // [5:6] is the sub-list for method output_type
+	4, // [4:5] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_proxyqueue_v1_proxyqueue_proto_init() }
@@ -251,7 +265,7 @@ func file_proxyqueue_v1_proxyqueue_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proxyqueue_v1_proxyqueue_proto_rawDesc), len(file_proxyqueue_v1_proxyqueue_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
